@@ -3,6 +3,7 @@
 
 **Objective:**
 To develop a lightweight, high-accuracy question-answering model by fine-tuning pre-trained transformer architectures (TinyLlama and Phi-4 Mini) on curated academic and instructional content focused on AI and deep learning.
+![image](https://github.com/user-attachments/assets/017a0d31-e6f8-4f36-8092-643df0a831bf)
 
 ---
 
