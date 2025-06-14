@@ -1,99 +1,79 @@
 # Zaboola_ML_student_assistant
+**Project Title:** Zaboola student assistant - Fine-Tuning TinyLlama and Phi-4 Models for Question-Answering on AI and Deep Learning Content
 
-## 🧠 Project: Fine-Tuning Phi-4 Mini & TinyLlama for Question Answering
-
-### 🔍 Overview
-
-This project focused on fine-tuning compact open-source language models (**Phi-4 Mini** and **TinyLlama**) for a **question answering task** using a custom dataset generated from educational material. The goal was to build an efficient, accurate assistant for answering questions from machine learning course content.
+**Objective:**
+To develop a lightweight, high-accuracy question-answering model by fine-tuning pre-trained transformer architectures (TinyLlama and Phi-4 Mini) on curated academic and instructional content focused on AI and deep learning.
 
 ---
 
-### ⚙️ Models Used
+**1. Dataset Creation**
 
-* **Phi-4 Mini**: A lightweight variant of Microsoft's Phi-4 model
-* **TinyLlama-1.1B-Chat**: Lightweight chat-tuned model suitable for fine-tuning
-* **Architecture**: AutoModelForCausalLM (causal decoder-only)
-* **Tokenizer**: AutoTokenizer for each respective model
+* **Sources:**
+
+  * Stanford CS229, CS230, CS221, CS228 course notes, exams, and slides
+  * DeepLearning.AI course PDFs (C1M1 to C5M3), Andrew Ng's "Machine Learning Yearning"
+  * AI4E, NLP Slides, DLS Slides, MLS Slides, M4ML, optimization documents, and GANS Slides
+  * Career-focused content ("How to Build a Career in AI")
+
+* **Generation Method:**
+
+  * Used Gemini 1.5 Flash to generate high-quality question-answer pairs from PDFs
+  * Performed preprocessing: extracted raw text, removed noisy content, sectioned by topic
+  * Validated generated Q\&A for correctness and academic depth
+
+* **Structure:**
+
+  * Each sample is a dictionary with keys: `question`, `answer`
+  * Example:
+
+    ```json
+    {"question": "What is the main advantage of ReLU over sigmoid?", "answer": "ReLU mitigates the vanishing gradient problem."}
+    ```
 
 ---
 
-### 📁 Dataset
+**2. Model Training**
 
-* **Sources**:
+* **Phase 1: Phi-4 Mini Fine-tuning**
 
-  * Stanford University lectures, slides and notes
-  * DeepLearning.AI courses by Andrew Ng
-  * Associated textbooks and official documentation
-* **Method**:
+  * Base: Phi-4 Mini (transformer causal decoder)
+  * Tokenized prompts with format: `Q: <question>\nA:`
+  * Trained for 3 epochs with early stopping
+  * Final training loss: \~0.20
 
-  * Gemini Flash 1.5 was used to extract and convert lecture slides, books, and notes into structured Q\&A format.
-* **Format Example**:
+* **Phase 2: TinyLlama Fine-tuning**
+
+  * Base: TinyLlama-1.1B-Chat
+  * Reformatted inputs into system-user-assistant chat format
+  * Included optional system prompt: "You are a helpful deep learning assistant."
+
+* **Training Details:**
+
+  * Optimizer: AdamW
+  * Batch size: 1 (gradient accumulation used)
+  * Evaluation using BLEU, ROUGE-1/L, BERTScore, F1, and Accuracy
+
+---
+
+**3. Results and Metrics**
+
+* Final evaluation on test set:
 
   ```json
   {
-    "question": "What is the bias-variance tradeoff?",
-    "answer": "The bias-variance tradeoff refers to the balance between a model's ability to minimize bias and variance, which affects generalization performance.",
-    "text": "Q: What is the bias-variance tradeoff?\nA: The bias-variance tradeoff refers to the balance..."
+    "bleu": 0.063,
+    "rouge1": 0.252,
+    "rougeL": 0.213,
+    "bertscore_f1": 0.847
   }
   ```
+* Qualitative inspection confirms precise, concise, and context-aware answers
 
 ---
 
-### 🧪 Training Setup
+**4. Inference & Deployment**
 
-* **Framework**: Hugging Face Transformers
+* Implemented `predict_answer(question: str)` inference function
+* Support for adding system prompts in chat-style inputs
+* Lightweight and suitable for on-device or API deployment
 
-* **Trainer**: `Trainer`
-
-* **Loss Function**: CrossEntropyLoss
-
-* **TrainingArguments**:
-
-  ```python
-  TrainingArguments(
-      output_dir="checkpoints",
-      num_train_epochs=3,
-      per_device_train_batch_size=1,
-      per_device_eval_batch_size=1,
-      gradient_accumulation_steps=4,
-      save_strategy="epoch",
-      evaluation_strategy="epoch",
-      logging_dir="logs",
-      learning_rate=5e-5,
-      bf16=True,
-      report_to="tensorboard"
-  )
-  ```
-
-* **Metrics Tracked**:
-
-  * Accuracy
-  * F1
-  * BLEU
-  * ROUGE
-  * BERTScore
-
----
-
-### ✅ Results
-
-* **Phi-4 Mini Final Loss**: \~0.20
-* **TinyLlama**: Comparable performance, slightly better generalization
-* **Observations**:
-
-  * Model learned cleanly from highly structured content
-  * Outputs were fluent and instructional
-
----
-
-### 🛠️ Optimization Tricks
-
-* Used `local_files_only=True` to avoid re-downloading
-* Cached models/tokenizers with Hugging Face cache
-* Mixed precision training with bf16 for performance
-
----
-
-### 📌 Summary
-
-A successful small-model fine-tuning project for educational Q\&A using high-quality instructional content and Gemini-generated data. The result was a lightweight assistant capable of answering foundational ML course questions efficiently.
